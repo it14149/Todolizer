@@ -5,8 +5,6 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-
-import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -214,14 +212,6 @@ public class Task implements Parcelable{
         }
     };
 
-    public int getDayOfMonth() {
-        return dayOfMonth;
-    }
-
-    public int getMonth() {
-        return month;
-    }
-
     public int getYear() {
         return year;
     }
@@ -234,11 +224,9 @@ public class Task implements Parcelable{
         return dtStart;
     }
 
-
     public void setTitle(String title) {
         this.title = title;
     }
-
 
     public void removeReminder() {
         this.reminder = 0;

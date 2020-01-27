@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.squareup.otto.Bus;
 
-import java.util.Calendar;
 
 public class ShowTaskActivity extends AppCompatActivity {
 
@@ -51,7 +50,7 @@ public class ShowTaskActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.show_task);
-        //Parcel parcelTask = getIntent().getParcelableExtra("Task");
+
         task = getIntent().getParcelableExtra("Task");
 
         this.taskID = task.getTaskID();
@@ -78,13 +77,13 @@ public class ShowTaskActivity extends AppCompatActivity {
         final CheckBox checkBox = findViewById(R.id.showTask_checkbox);
 
 
+
         btnCancelChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-
 
         btnSaveChanges.setOnClickListener(new View.OnClickListener()
         {
@@ -115,6 +114,8 @@ public class ShowTaskActivity extends AppCompatActivity {
             }
         });
 
+        //If user confirms, delete task from db and use messageHasBeenDeleted to post an event using bus
+        //which will be read from the adapter that has registered to it
         deleteTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,10 +128,8 @@ public class ShowTaskActivity extends AppCompatActivity {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.dismiss();
-                        Log.d("ShowTask","Delete Task");
                         DatabaseHelper dbHelper = DatabaseHelper.getInstance(ShowTaskActivity.this);
                         dbHelper.deleteTask(taskID);
-
 
                         messageHasBeenDeleted();
                     }
@@ -138,7 +137,6 @@ public class ShowTaskActivity extends AppCompatActivity {
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.dismiss();
-                        Log.d("ShowTask","NOT Delete Task");
                     }
                 });
                 AlertDialog alert = builder.create();
@@ -173,27 +171,9 @@ public class ShowTaskActivity extends AppCompatActivity {
         });
 
          */
-
-        txvDescription.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                Log.d("ShowTask","beforeTextChanged");
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.d("ShowTask","onTextChanged");
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                Log.d("ShowTask","afterTextChanged");
-
-            }
-        });
-
     }
 
+    //Post an DeletedTaskID Event on the bus which will be read by the adapter
     private void messageHasBeenDeleted(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Task has been deleted")

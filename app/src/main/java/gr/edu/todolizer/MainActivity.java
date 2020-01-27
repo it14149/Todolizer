@@ -3,17 +3,11 @@ package gr.edu.todolizer;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.common.Scopes;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -22,14 +16,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+
 import android.net.Uri;
 
 import android.provider.CalendarContract;
@@ -50,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private static boolean READ_CALENDAR_GRANTED = false;
 
     private static String CALENDAR_ACCOUNT_NAME;
-    private static long CALENDAR_ACCOUNT_TYPE = 0;
     private static int CALENDAR_POS = -1;
     private static long CALENDAR_ID = -1;
 
@@ -58,12 +50,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final String TAG_CALENDAR = "CALENDAR";
 
-    private Button addTaskBtn;
-    private RecyclerView recyclerView;
     private ArrayList<Task> taskArrayList;
     private TaskListAdapter adapter;
 
-    //private SQLiteDatabase db;
 
     private DatabaseHelper dbHelper;
     private Bus bus;
@@ -72,73 +61,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //AccountManager am = AccountManager.get(this);
-        //Account[] myAcc = am.getAccountsByType(null);
-        //Log.d("START", myAcc.toString());
-
         //Purge database
         //getBaseContext().deleteDatabase("task.db");
 
-        //This gets the Calendar ID that we want to read
-        //loadFromCalendar();
-        //readFromCalendar();
-
         dbHelper = DatabaseHelper.getInstance(this);
-
-
-
         //dbHelper.populateDB();
 
-
-        //dbHelper.stuff();
-
-        recyclerView = findViewById(R.id.taskListView);
+        RecyclerView recyclerView = findViewById(R.id.taskListView);
         taskArrayList = new ArrayList<>();
 
-        /*
-        TODO: Use this code to print the checkbox status
-        Button getCheckboxStatusBtn = findViewById(R.id.checkboxbtn);
 
-        getCheckboxStatusBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                printCheckboxStatus();
-            }
-        });
-
-         */
-
-        final Button readFromCalendar = findViewById(R.id.checkboxbtn);
-        //readFromCalendar.setText("Load from Calendar");
-        readFromCalendar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadFromCalendar();
-                //  readFromCalendar();
-            }
-        });
-
-
-        //readDB();
 
         taskArrayList = dbHelper.readTasks();
-
-
-
-        //adapter = new TaskListAdapter(this, R.layout.adapter_task_view_layout, taskArrayList);
-
 
         adapter = new TaskListAdapter(this,taskArrayList);
         recyclerView.setAdapter(adapter);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        //taskListView.setAdapter(adapter);
-
-        //adapter.notifyDataSetChanged();
 
         bus = GlobalBus.getInstance();
-//        bus.register(adapter);
+
+        final Button readFromCalendar = findViewById(R.id.checkboxbtn);
+        //readEventsFromCalendar.setText("Load from Calendar");
+        readFromCalendar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /* Step 1: Check read calendar permission. If it does not exist, request it
+                    Step 2: If it exists or if you get them in onRequestPermissionResult, readDeviceCalendars
+                    to read all the calendars in the device
+                    Step 3: chooseCalendar() to show the corresponding AlertDialogs for the user to choose which Calendar to load from
+                    Step 4: If the user confirms his choice, readEventsFromCalendar to load the events using ContentProvider */
+
+                loadFromCalendar();
+            }
+        });
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -151,89 +107,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressLint("MissingPermission")
-    private void readFromCalendar() {
-        Log.d("CALENDAR", "Checking permission");
-        //if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-        if(READ_CALENDAR_GRANTED){
-            Log.d("CALENDAR", "Checking Calendar ID");
-            if (CALENDAR_ID != -1) {
-
-                Cursor cur;
-                ContentResolver cr = getContentResolver();
-
-                String[] mProjection =
-                        {
-                                "_id",
-                                CalendarContract.Events.TITLE,
-                                CalendarContract.Events.DESCRIPTION,
-                                CalendarContract.Events.ORGANIZER,
-                                CalendarContract.Events.DTSTART,
-                        };
-
-                String selection = CalendarContract.Events.ORGANIZER + " = ? ";
-                String selectionArgs[] = new String[]{CALENDAR_ACCOUNT_NAME};
-
-                Uri uri = CalendarContract.Events.CONTENT_URI;
-                cur = cr.query(uri, mProjection, selection, selectionArgs, null);
-
-                Log.d("CALENDAR", "Reading Events");
-                while(cur.moveToNext()){
-                    String descr = cur.getString(cur.getColumnIndex(CalendarContract.Events.DESCRIPTION));
-                    String title = cur.getString(cur.getColumnIndex(CalendarContract.Events.TITLE));
-                    String organizer = cur.getString(cur.getColumnIndex(CalendarContract.Events.ORGANIZER));
-                    long dsStart = cur.getLong((cur.getColumnIndex(CalendarContract.Events.DTSTART)));
-                    Log.d("CALENDAR","Title: " + title);
-                    Log.d("CALENDAR","Description: " + descr);
-                    Log.d("CALENDAR","Organizer: " + organizer);
-                    Log.d("CALENDAR","DTSTART: " + String.valueOf(dsStart));
-                    Task task = new Task(title,descr,dsStart,organizer);
-                    //taskArrayList.add(0,task);
-                    //Avoid adding tasks that you have added before
-                    //TODO: Should check against all conditions, original_ID is not enough by itself
-                    if(!task.findOriginalID(taskArrayList)){
-                        if(!task.getOrganizer().equals("Local")) {
-
-
-
-                            addTaskToAdapter(task);
-
-                            //adapter.notifyItemChanged();
-                        }
-                    }
-
-
-                }
-                adapter.notifyDataSetChanged();
-
-            } else {
-                Toast.makeText(MainActivity.this, "No Calendar chosen", Toast.LENGTH_LONG).show();
-            }
-        }
-
-    }
     private void addTaskToAdapter(Task task){
         int taskID = dbHelper.addTask(task);
 
@@ -259,31 +132,22 @@ public class MainActivity extends AppCompatActivity {
                 String title = data.getStringExtra("title");
                 String descr = data.getStringExtra("descr");
 
-
-                int date_dayOfMonth;
-                int date_month;
-                int date_year;
-
-
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(System.currentTimeMillis());
 
+                //Check if user added a due date. If no due date is, the current date will be added
                 if(hasDueDate){
                     Bundle dateBundle = data.getBundleExtra("due_date_dateBundle");
-                    date_dayOfMonth = dateBundle.getInt("dayOfMonth");
-                    date_month = dateBundle.getInt("month");
-                    date_year = dateBundle.getInt("year");
+                    int date_dayOfMonth = dateBundle.getInt("dayOfMonth");
+                    int date_month = dateBundle.getInt("month");
+                    int date_year = dateBundle.getInt("year");
                     calendar.set(date_year,date_month,date_dayOfMonth);
                 }
-                else{
-
-                    date_dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-                    date_month = calendar.get(Calendar.MONTH) ;
-                    date_year = calendar.get(Calendar.YEAR);
-                }
-
                 long dueDateInMillis = calendar.getTimeInMillis();
 
+
+                //Reset the calendar date to today
+                //Check if user added a Reminder date. If not, make it 0
                 calendar.setTimeInMillis(System.currentTimeMillis());
                 long reminderInMillis = 0;
                 if(hasReminder){
@@ -301,48 +165,14 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("REMINDER", "MainActivity Reminder " + reminderInMillis);
                 }
 
-
-                //taskArrayList.add(new Task(title,descr,0,0,0));
-                //Task task = new Task( title,descr,date_dayOfMonth,date_month,date_year, 0);
                 Task task = new Task(title,descr,dueDateInMillis,reminderInMillis);
-                int taskID = dbHelper.addTask(task);
+                dbHelper.addTask(task);
 
-                if(taskID != -1){
-                    task.setTaskID(taskID);
-                    taskArrayList.add(task);
-                    adapter.notifyDataSetChanged();
-                }
-                else{
-                    Log.d(TAG,"Adding Task to Database failed");
-                }
+                addTaskToAdapter(task);
+
             }
         }
     }
-
-    /*
-    private void readDB(DatabaseHelper dbHelper){
-        SQLiteDatabase db = SQLiteDatabase.
-        Cursor cursor = db.rawQuery("select * from Task",
-                null);
-        dbHelper.
-        //StringBuilder sb = new StringBuilder();
-
-        while(cursor.moveToNext()){
-            String title = cursor.getString(0);
-            String description = cursor.getString(1);
-            int dayOfMonth = Integer.parseInt(cursor.getString(2));
-            int month = Integer.parseInt(cursor.getString(3));
-            int year = Integer.parseInt(cursor.getString(4));
-            int checkboxChecked = Integer.parseInt(cursor.getString(5));
-            taskArrayList.add(new Task(title,description,dayOfMonth,month,year,checkboxChecked));
-
-        }
-        cursor.close();
-
-        //EditText txtDbOut = findViewById(R.id.taskListView);
-
-        //txtDbOut.setText(sb.toString());
-    } */
 
     @Override
     protected void onDestroy() {
@@ -352,16 +182,15 @@ public class MainActivity extends AppCompatActivity {
         if(adapter != null) {
             bus.unregister(adapter);
         }
+
     }
-
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
     }
 
+    /*
     private void printCheckboxStatus(){
         DatabaseHelper databaseHelper = DatabaseHelper.getInstance(this);
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
@@ -375,9 +204,65 @@ public class MainActivity extends AppCompatActivity {
 
             if(checkboxChecked == 1) {
                 String ss = String.format("taskID: %d, checkboxChecked: %d", taskID, checkboxChecked);
-                Log.d("checkboxTAG", ss);
             }
         }
+    }
+
+     */
+
+    @SuppressLint("MissingPermission")
+    private void readEventsFromCalendar() {
+
+        Log.d("CALENDAR", "Checking permission");
+
+        if(READ_CALENDAR_GRANTED){
+            Log.d("CALENDAR", "Checking Calendar ID");
+            if (CALENDAR_ID != -1) {
+
+                Cursor cur;
+                ContentResolver cr = getContentResolver();
+
+                String[] mProjection =
+                        {
+                                "_id",
+                                CalendarContract.Events.TITLE,
+                                CalendarContract.Events.DESCRIPTION,
+                                CalendarContract.Events.ORGANIZER,
+                                CalendarContract.Events.DTSTART,
+                        };
+
+                String selection = CalendarContract.Events.ORGANIZER + " = ? ";
+                String selectionArgs[] = new String[]{CALENDAR_ACCOUNT_NAME};
+
+                Uri uri = CalendarContract.Events.CONTENT_URI;
+                cur = cr.query(uri, mProjection, selection, selectionArgs, null);
+
+
+                while(cur.moveToNext()){
+                    String descr = cur.getString(cur.getColumnIndex(CalendarContract.Events.DESCRIPTION));
+                    String title = cur.getString(cur.getColumnIndex(CalendarContract.Events.TITLE));
+                    String organizer = cur.getString(cur.getColumnIndex(CalendarContract.Events.ORGANIZER));
+                    long dtStart = cur.getLong((cur.getColumnIndex(CalendarContract.Events.DTSTART)));
+                    Log.d("CALENDAR","Title: " + title);
+                    Log.d("CALENDAR","Description: " + descr);
+                    Log.d("CALENDAR","Organizer: " + organizer);
+                    Log.d("CALENDAR","DTSTART: " + dtStart);
+                    Task task = new Task(title,descr,dtStart,organizer);
+                    //Avoid adding tasks that you have added before
+                    if(!task.findOriginalID(taskArrayList)
+                            && !task.getOrganizer().equals("Local")
+                            && task.getDtStart() != dtStart)
+                    {
+
+                        addTaskToAdapter(task);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(MainActivity.this, "No Calendar chosen", Toast.LENGTH_LONG).show();
+            }
+        }
+
     }
 
     private void loadFromCalendar(){
@@ -388,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         if(hasReadCalendarPermission == PackageManager.PERMISSION_GRANTED){
             Log.d(TAG_CALENDAR, "Permission already Granted");
             READ_CALENDAR_GRANTED = true;
-            readEventsFromCalendar();
+            readDeviceCalendars();
         }
         else{
             Log.d(TAG_CALENDAR, "Requesting permission");
@@ -396,7 +281,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void chooseCalendar(final String[] displayNames,final long[] calendarIDs){
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[],int[] grantResults){
+        String TAG_CALENDAR = "CALENDAR";
+        switch(requestCode) {
+            case REQUEST_CODE_READ_CALENDAR: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    READ_CALENDAR_GRANTED = true;
+                    readDeviceCalendars();
+                }
+                else{
+                    Log.d(TAG_CALENDAR, "READ CALENDAR PERMISSION DENIED");
+                }
+            }
+        }
+
+    }
+
+
+    private void chooseCalendar(final String[] displayNames, final long[] calendarIDs){
 
 
         // setup the alert builder
@@ -425,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
                 CALENDAR_ACCOUNT_NAME = displayNames[CALENDAR_POS];
                 CALENDAR_ID = calendarIDs[CALENDAR_POS];
                 Log.d("CALENDAR","Chosen ID " +CALENDAR_ID);
-                readFromCalendar();
+                readEventsFromCalendar();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -440,41 +343,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void stuff(){
-        AccountManager am = AccountManager.get(MainActivity.this);
-        Bundle options = new Bundle();
-
-        /*
-        String myAccount_ = am.getAccountsByType();
-
-        am.getAuthToken(
-                myAccount_,
-                "Post Task to Google Calendar",
-                options,
-                MainActivity.this,
-                new OnTokenRequired(),
-                new Handler(new OnError()));
-        )
-
-         */
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[],int[] grantResults){
-        String TAG_CALENDAR = "CALENDAR";
-        switch(requestCode) {
-            case REQUEST_CODE_READ_CALENDAR: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    READ_CALENDAR_GRANTED = true;
-                    readEventsFromCalendar();
-                }
-                else{
-                    Log.d(TAG_CALENDAR, "READ CALENDAR PERMISSION DENIED");
-                }
-            }
-        }
-
-    }
-    private void readEventsFromCalendar(){
+    private void readDeviceCalendars(){
         String[] projection =
                 new String[]{
                         CalendarContract.Calendars._ID,
@@ -498,15 +367,14 @@ public class MainActivity extends AppCompatActivity {
                 long accountType = calCursor.getLong(2);
                 long ownerAccount = calCursor.getLong(3);
                 String displayName = calCursor.getString(4);
-                // ...
-                Log.d(TAG_CALENDAR, "ID: " + String.valueOf(id));
+
+                Log.d(TAG_CALENDAR, "ID: " + id);
                 Log.d(TAG_CALENDAR, "Account Name: " + accountName);
                 Log.d(TAG_CALENDAR, "Account Type: " + accountType);
-                Log.d(TAG_CALENDAR, "Owner Type: " + String.valueOf(ownerAccount));
+                Log.d(TAG_CALENDAR, "Owner Type: " + ownerAccount);
 
                 stringArrayList.add(displayName);
                 longArrayList.add(id);
-
             } while (calCursor.moveToNext());
 
             Object[] src = stringArrayList.toArray();
@@ -523,7 +391,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             chooseCalendar(stringList, longList);
-
         }
     }
 

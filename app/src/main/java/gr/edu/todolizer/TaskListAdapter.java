@@ -15,7 +15,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
@@ -26,12 +25,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
 
     private final String TAG = "TaskListAdapter";
-    //private final LayoutInflater inflater;
-   // private final int layoutResource;
     private List<Task> tasks;
     private Context context;
-
-    private boolean checkboxIsChecked;
 
     private final Bus bus;
 
@@ -44,8 +39,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
 
         bus = DatabaseHelper.getInstance(this.context).getBus();
         bus.register(this);
-
-
     }
 
     @NonNull
@@ -86,22 +79,6 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         String monthAndDay = task.getMonthAndDay();
         viewHolder.taskMonthAndDay.setText(monthAndDay);
         viewHolder.taskYear.setText(String.valueOf(task.getYear()));
-        /*
-        String monthAndDay = task.getMonthAndDay();
-        if(monthAndDay != null){
-            viewHolder.taskMonthAndDay.setText(monthAndDay);
-            viewHolder.taskYear.setText(String.valueOf(task.getYear()));
-        }
-        else {
-            viewHolder.taskMonthAndDay.setText("");
-            viewHolder.taskYear.setText("");
-        }
-
-         */
-
-
-
-
 
         viewHolder.checkBox.setOnCheckedChangeListener(null);
 
@@ -129,39 +106,35 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
                     db.updateCheckbox(task.getTaskID(),isChecked);
 
                     task.setCheckboxChecked(isChecked);
-
                     viewHolder.taskTitle.setPaintFlags(viewHolder.taskTitle.getPaintFlags() ^ Paint.STRIKE_THRU_TEXT_FLAG);
                 }
-                else{//This should never happen.
-                    //To avoid this we set the OnClickListener to null on BindViewHolder
-                    //Then we get its correct value, set it and set a new OnClickListener
+                else{
                     Log.d(TAG,"The checkbox OnClickListener fired when it shouldn't");
                 }
-                //notifyItemChanged(position);
+
             }
         });
 
     }
-
-
-
 
     @Override
     public int getItemCount() {
         return  this.tasks.size();
     }
 
-@Subscribe
-public void getTaskDeleted(Events.DeletedTaskID event){
+
+    //The adapter subscribes to events created by other activities and knows when the contents of the arraylist are changed
+    @Subscribe
+    public void getTaskDeleted(Events.DeletedTaskID event){
         int position = event.getPosition();
         tasks.remove(tasks.get(position));
         notifyDataSetChanged();
         Log.d("Subscriber Facts", "Task has been deleted");
-}
+    }
 
 
-@Subscribe
-public void getCheckboxChanged(Events.CheckboxStatus event){
+    @Subscribe
+    public void getCheckboxChanged(Events.CheckboxStatus event){
         int position = event.getPosition();
         boolean isChecked = event.getChecked();
         Task task = tasks.get(position);
@@ -169,10 +142,10 @@ public void getCheckboxChanged(Events.CheckboxStatus event){
         notifyItemChanged(position);
         Log.d("Subscriber Facts", "Checkbox status has been changed");
 
-}
+    }
 
-@Subscribe
-public void getDescriptionChanged(Events.DescriptionChanged event){
+    @Subscribe
+    public void getDescriptionChanged(Events.DescriptionChanged event){
         int position = event.getPosition();
         String description = event.getDescription();
         Task task = tasks.get(position);
@@ -192,8 +165,6 @@ public void getDescriptionChanged(Events.DescriptionChanged event){
     }
 
 
-
-
     public class ViewHolder extends RecyclerView.ViewHolder{
         final Button taskTitle;
         final TextView taskMonthAndDay;
@@ -207,11 +178,6 @@ public void getDescriptionChanged(Events.DescriptionChanged event){
             taskMonthAndDay = view.findViewById(R.id.taskMonthAndDay);
             taskYear = view.findViewById(R.id.taskYear);
             checkBox = view.findViewById(R.id.checkBox);
-
         }
-
     }
-
-
-
 }

@@ -14,26 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link TimeFragment.OnTimeFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link TimeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class TimeFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnTimeFragmentInteractionListener mListener;
     private Bundle bundleTime;
@@ -43,9 +25,6 @@ public class TimeFragment extends DialogFragment implements TimePickerDialog.OnT
         this.mListener = callback;
     }
 
-
-
-
     public TimeFragment() {
         // Required empty public constructor
     }
@@ -53,37 +32,15 @@ public class TimeFragment extends DialogFragment implements TimePickerDialog.OnT
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         setTime(hourOfDay,minute);
-        Log.d("TEST",String.valueOf(hourOfDay));
-        Log.d("TEST",String.valueOf((minute)));
-
     }
 
-    public Bundle getTime(){
-        return bundleTime;
-    }
-
-
-
-
-    // TODO: Rename and change types and number of parameters
     public static TimeFragment newInstance() {
-        TimeFragment fragment = new TimeFragment();
-        Bundle args = new Bundle();
-        //args.putString(ARG_PARAM1, param1);
-        //args.putString(ARG_PARAM2, param2);
-        //fragment.setArguments(args);
-
-        return fragment;
+        return new TimeFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-
-        }
     }
 
     @Override
@@ -91,12 +48,11 @@ public class TimeFragment extends DialogFragment implements TimePickerDialog.OnT
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view= inflater.inflate(R.layout.fragment_time, container, false);
+
         TimePicker timePicker = view.findViewById(R.id.timePicker);
         timePicker.setIs24HourView(true);
         timePicker.setCurrentHour(9);
         timePicker.setCurrentMinute(0);
-
-
 
         bundleTime = new Bundle();
         setTime(9,0);
@@ -116,16 +72,7 @@ public class TimeFragment extends DialogFragment implements TimePickerDialog.OnT
     private void setTime(int hour, int minute) {
         bundleTime.putInt("hour",hour);
         bundleTime.putInt("minute",minute);
-        //Toast.makeText(getContext(),"Time: " + hour+":"+minute,Toast.LENGTH_SHORT).show();
     }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-           // mListener.onFragmentInteraction(uri);
-        }
-    }
-
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -143,8 +90,6 @@ public class TimeFragment extends DialogFragment implements TimePickerDialog.OnT
         super.onDetach();
         mListener = null;
     }
-
-
 
     /**
      * This interface must be implemented by activities that contain this

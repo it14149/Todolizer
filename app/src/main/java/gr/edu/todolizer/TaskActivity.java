@@ -6,11 +6,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 
 
@@ -125,15 +123,6 @@ public class TaskActivity extends AppCompatActivity {
                 int year = dateBundle.getInt("year");
                 String date = dayOfMonth + "/" + (month+1) + "/" + year;
 
-
-                //It's probably better to not pass the same bundle back to MainActivity,
-                //but this is easier and I am lazy
-                /*
-                intentReturnTask.putExtra("dayOfMonth",dayOfMonth);
-                intentReturnTask.putExtra("month",month);
-                intentReturnTask.putExtra("year",year);
-                 */
-
                 intentReturnTask.putExtra("due_date_dateBundle",dateBundle);
                 btnCalendar.setText(date);
 
@@ -162,10 +151,6 @@ public class TaskActivity extends AppCompatActivity {
 
                 String time = hour + ":" + minute;
 
-                /*
-                intentReturnTask.putExtra("hour",hour);
-                intentReturnTask.putExtra("minute",minute);
-                */
                 intentReturnTask.putExtra("reminder_dateBundle",dateBundle);
                 intentReturnTask.putExtra("reminder_timeBundle",timeBundle);
 
@@ -175,18 +160,4 @@ public class TaskActivity extends AppCompatActivity {
             }
         }
     }
-
-    private void onDateActivityResult(@Nullable Intent data) {
-        int dayOfMonth = data.getIntExtra("dayOfMonth",0);
-        int month = data.getIntExtra("month",0);
-        int year = data.getIntExtra("year",0);
-        String date = dayOfMonth + "/" + (month) + "/" + year;
-
-
-        intentReturnTask.putExtra("dayOfMonth",dayOfMonth);
-        intentReturnTask.putExtra("month",month);
-        intentReturnTask.putExtra("year",year);
-    }
-
-
 }

@@ -1,21 +1,15 @@
 package gr.edu.todolizer;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CalendarView;
 import android.widget.Toast;
-
-
-
 import java.util.Calendar;
 
 
@@ -28,19 +22,10 @@ import java.util.Calendar;
  * create an instance of this fragment.
  */
 public class CalendarFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
     private static final String TAG = "CalendarFragment";
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private CalendarView calendarView;
-
     private OnCalendarFragmentInteractionListener mListener;
     private Bundle bundleDate;
 
@@ -49,30 +34,17 @@ public class CalendarFragment extends Fragment {
         this.mListener = callback;
     }
 
-
     public CalendarFragment() {
         // Required empty public constructor
     }
 
-
-
-
-    // TODO: Rename and change types and number of parameters
     public static CalendarFragment newInstance() {
-        CalendarFragment fragment = new CalendarFragment();
-        Bundle args = new Bundle();
-
-        return fragment;
+        return new CalendarFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
     }
 
     @Override
@@ -89,8 +61,6 @@ public class CalendarFragment extends Fragment {
         int day =  c.get(Calendar.DAY_OF_MONTH);
         int month =  c.get(Calendar.MONTH)+1;
         int year =  c.get(Calendar.YEAR);
-
-
 
         bundleDate = new Bundle();
         //Set bundle info
@@ -111,32 +81,10 @@ public class CalendarFragment extends Fragment {
                 mListener.onDateChangeListener(bundleDate);
 
                 Toast.makeText(getContext(),date,Toast.LENGTH_SHORT).show();
-
-
-                /*
-                Intent intent = new Intent(CalendarActivity.this, TaskActivity.class);
-
-                intent.putExtra("dayOfMonth",dayOfMonth);
-                intent.putExtra("month",month+1);
-                Log.d("Year",String.valueOf(year));
-                intent.putExtra("year",year);
-
-                setResult(Activity.RESULT_OK,intent);
-                finish();
-
-                 */
             }
         });
 
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-
-            //mListener.onDateChangeListener(Bundle );
-        }
     }
 
     private void setCalendarDate(int day, int month, int year){
@@ -144,14 +92,6 @@ public class CalendarFragment extends Fragment {
         bundleDate.putInt("month",month-1);
         bundleDate.putInt("year",year);
     }
-
-
-    public Bundle getCalendarDate(){
-        return bundleDate;
-    }
-
-
-
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -163,7 +103,6 @@ public class CalendarFragment extends Fragment {
                     + " must implement OnCalendarFragmentInteractionListener");
         }
     }
-
 
     @Override
     public void onDetach() {

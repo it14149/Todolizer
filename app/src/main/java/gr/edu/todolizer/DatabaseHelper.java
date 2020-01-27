@@ -6,9 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-
 import com.squareup.otto.Bus;
-
 import java.util.ArrayList;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -30,7 +28,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
   private static final String TASK_REMIDNER = "reminder";
   private static final String TASK_CHECKBOX_IS_CHECKED = "checkboxChecked";
   private static final String TASK_ORGANIZER = "organizer";
-
 
 
   private static final int COLUMN_KEY_ID = 0;
@@ -63,16 +60,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
   }
 
-  // Called when the database connection is being configured.
-  // Configure database settings for things like foreign key support, write-ahead logging, etc.
-  /*
-  @Override
-  public void onConfigure(SQLiteDatabase db) {
-    super.onConfigure(db);
-    db.setForeignKeyConstraintsEnabled(true);
-  }
-  */
-
   @Override
   public void onCreate(SQLiteDatabase db) {
     String CREATE_TASKS_TABLE = "CREATE TABLE " + TABLE_TASKS +
@@ -87,10 +74,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             TASK_ORGANIZER + " TEXT NOT NULL DEFAULT 'Local' "+
             ")";
 
-
-
     db.execSQL(CREATE_TASKS_TABLE);
-
   }
 
   // Called when the database needs to be upgraded.
@@ -114,8 +98,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // consistency of the database.
     db.beginTransaction();
     try {
-      // The user might already exist in the database (i.e. the same user created multiple posts).
-      //long userId = addOrUpdateUser(post.user);
 
       ContentValues values = new ContentValues();
       values.put(TASK_TITLE, task.getTitle());
@@ -125,28 +107,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
       values.put(TASK_CHECKBOX_IS_CHECKED, task.getCheckboxChecked());
       values.put(TASK_ORGANIZER,task.getOrganizer());
 
-
-      // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
+      //SQLite auto increments the primary key column.
       long rowID = db.insertOrThrow(TABLE_TASKS, null, values);
 
-      //Log.d("rowID: ", String.valueOf(rowID));
-
-
+      //Use the rowID to get the generated key which we use in Task.class
       String readTaskID = String.format("SELECT * from Task WHERE rowID == %d", rowID);
       Cursor cursor = db.rawQuery(readTaskID,null);
 
-      //Log.d(TAG, task.getDescription());
-      cursor.moveToNext();
-      //Log.d("row cursor pos" , String.valueOf(cursor.getPosition()));
-      //Log.d("row cursor " , String.valueOf(cursor.getInt(0)));
-      //Log.d("THIS IS THE ID" , cursor.getString(1));
-      taskID = cursor.getInt(0);
+      if(cursor.moveToNext());{
+        taskID = cursor.getInt(COLUMN_KEY_ID);
+      }
 
       cursor.close();
-
-
-
-
       db.setTransactionSuccessful();
     } catch (Exception e) {
       Log.d(TAG, "Error while trying to add post to database");
@@ -163,11 +135,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
       SQLiteDatabase db = getWritableDatabase();
       db.beginTransaction();
       try {
-
-
-
           for (int i = 1; i < 50; i++) {
-
 
               ContentValues values = new ContentValues();
               String title = String.format("Title %d", i);
@@ -179,9 +147,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
               values.put(TASK_CHECKBOX_IS_CHECKED, 0);
               values.put(TASK_ORGANIZER, "Local");
 
-
-
-              // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
               db.insertOrThrow(TABLE_TASKS, null, values);
           }
           db.setTransactionSuccessful();
@@ -200,11 +165,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     String TASKS_SELECT_QUERY = String.format("SELECT * FROM %s", TABLE_TASKS);
 
     SQLiteDatabase db = getReadableDatabase();
-
     Cursor cursor = db.rawQuery(TASKS_SELECT_QUERY, null);
 
     Log.d("NUMBERS", "Reading tasks on DatabaseHelper");
-    //Log.d(TAG, "Let's read");
+
     while(cursor.moveToNext()){
       int taskID = cursor.getInt(COLUMN_KEY_ID);
       String title = cursor.getString(COLUMN_TITLE);
@@ -224,17 +188,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     cursor.close();
     db.close();
 
-    //Log.d(TAG, String.valueOf(taskArrayList.isEmpty()));
-
     return taskArrayList;
   }
 
-  /*
-  public void setTaskCheckboxIsChecked(Task task){
 
-  }
-
-   */
 
   public void updateCheckbox(int taskID, boolean isChecked) {
     String updateString = String.format("UPDATE TASK SET checkboxChecked =%d WHERE taskID==%d",isChecked ? 1: 0,taskID);
@@ -276,6 +233,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
   }
 
+  /*
   public boolean lookForTaskID(int taskID) {
     SQLiteDatabase db = sInstance.getReadableDatabase();
     String lookForTaskID_QUERRY = String.format("SELECT EXISTS(SELECT %s FROM %s WHERE %s==%d)",
@@ -285,7 +243,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     try {
       Cursor cursor = db.rawQuery(lookForTaskID_QUERRY,null);
       if(cursor.moveToNext()){
-        result = cursor.getInt(0);
+        result = cursor.getInt(COLUMN_KEY_ID);
       }
 
       db.setTransactionSuccessful();
@@ -299,6 +257,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
       return result == 1;
   }
+
+   */
 
   public Bus getBus(){
     return bus;

@@ -3,11 +3,8 @@ package gr.edu.todolizer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +33,7 @@ public class CalendarActivity extends AppCompatActivity implements
         super.onResume();
 
     }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,11 +61,6 @@ public class CalendarActivity extends AppCompatActivity implements
 
         }
 
-        //calendarView = findViewById(R.id.calen);
-
-
-
-
         cancelSetDateAndTimeBtn = findViewById(R.id.cancelCalendarBtn);
         cancelSetDateAndTimeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,11 +87,6 @@ public class CalendarActivity extends AppCompatActivity implements
                 finish();
             }
         });
-
-
-
-
-
 
     }
     private void initializeButtonsAndListeners(){
@@ -132,9 +120,10 @@ public class CalendarActivity extends AppCompatActivity implements
         fragmentTransaction.add(R.id.calendar_frame_layout, calendarFragment);
         fragmentTransaction.commit();
     }
+
+    //Switch from one visible fragment to the other
     private void loadFragment() {
-        //fragmentManager = getSupportFragmentManager();
-        //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
          fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
          if(calendarFragment.isVisible()){
@@ -155,15 +144,10 @@ public class CalendarActivity extends AppCompatActivity implements
         dateBundle = bundle;
     }
 
+    //TimeFragment interface method
     @Override
     public void onTimeChangeListener(Bundle bundle){
         timeBundle = bundle;
-        int hour = timeBundle.getInt("hour");
-        int minute = timeBundle.getInt("minute");
-
-        String time = hour + ":" + minute;
-        Toast.makeText(this,"Time: " + time,Toast.LENGTH_LONG).show();
-        Log.d("CalendarActivity", "Time: " + time);
     }
 
 
@@ -176,7 +160,6 @@ public class CalendarActivity extends AppCompatActivity implements
         } else {//fragment instanceof TimeFragment
             TimeFragment timeFragment = (TimeFragment) fragment;
             timeFragment.setOnTimeSelectedListener(this);
-
         }
     }
 }
