@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
                     //Avoid adding tasks that you have added before
                     if(!task.findOriginalID(taskArrayList)
                             && !task.getOrganizer().equals("Local")
-                            && task.getDtStart() != dtStart)
+                            )
                     {
 
                         addTaskToAdapter(task);
